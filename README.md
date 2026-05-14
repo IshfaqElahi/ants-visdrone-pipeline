@@ -1,6 +1,40 @@
 # ants-visdrone-pipeline
 An computer vision pipeline utilizing YOLOv8 Nano and ByteTrack on the VisDrone dataset for real-time object detection, human counting, and multi-object video tracking in aerial surveillance.
 
+## Post-Clone Setup Instructions
+
+### Navigate to the Project Directory
+```bash
+cd ants-visdrone-pipeline
+```
+Set Up the Virtual Environment
+It is highly recommended to run this project inside an isolated virtual environment to prevent library conflicts.
+```bash
+# Create the virtual environment
+python -m venv .venv
+
+# Activate it (Windows)
+.venv\Scripts\activate
+
+# Activate it (Mac/Linux)
+source .venv/bin/activate
+```
+ Install Dependencies
+With your virtual environment activated, install the required packages:
+```bash
+pip install -r requirements.txt
+```
+### Download and Place External Data
+Due to file size constraints, the 2.11 GB dataset is hosted externally on Google Drive. (https://drive.google.com/drive/folders/1MT7mrrRQhJosLVBaPmuaw1FVqgk75Km4?usp=sharing)
+1. Download the `dataset` folder from the provided Google Drive link.
+2. Place the `dataset` folder directly into the root directory of this cloned project.
+
+*(Note: The trained model weights, `best.pt`, are already included in this repository under the `runs/` folder, so you only need to download the dataset!)*
+
+Run the Pipeline
+The project uses dynamic relative paths, so the scripts will execute flawlessly once the data is in place.
+
+
 # 1.1 Pipeline Architecture
 The four tasks form a sequential workflow:
 
