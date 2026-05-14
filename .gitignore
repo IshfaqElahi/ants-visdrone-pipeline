@@ -1,5 +1,7 @@
-.venv/
+# --- ANTS Project Specific Files ---
+dataset/
+VisDrone_Dataset/
 Task04_Outputs/
 *.mp4
 *.avi
-*.mov   
+*.mov
