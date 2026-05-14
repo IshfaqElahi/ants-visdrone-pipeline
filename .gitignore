@@ -1,0 +1,5 @@
+.venv/
+Task04_Outputs/
+*.mp4
+*.avi
+*.mov   
