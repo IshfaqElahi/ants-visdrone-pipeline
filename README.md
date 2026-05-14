@@ -1,6 +1,5 @@
 # ants-visdrone-pipeline
 An computer vision pipeline utilizing YOLOv8 Nano and ByteTrack on the VisDrone dataset for real-time object detection, human counting, and multi-object video tracking in aerial surveillance.
-# ANTS PROJECT
 
 # 1.1 Pipeline Architecture
 The four tasks form a sequential workflow:
@@ -43,13 +42,14 @@ D:\ANTS\
 ├── Task01_Visualizations\                  # Output: annotated training images
 ├── Task03_Outputs\                         # Output: inference images with counts
 └── Task04_Outputs\                         # Output: tracked video files
-
+```
 ## 2. Task 1 — Dataset Visualization
 **Script:** `task1_visualization.py`
 
 This script randomly selects a training image from the VisDrone dataset, parses its corresponding YOLO annotation file, and renders colored bounding boxes for humans (red) and cars (green). The annotated image is saved to disk and displayed interactively via Matplotlib.
 
 ### 2.1 Configuration
+
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | `img_dir` | str (path) | Absolute path to the training images directory |
@@ -57,6 +57,7 @@ This script randomly selects a training image from the VisDrone dataset, parses 
 | `output_dir` | str (path) | Destination folder for saved annotated images; auto-created if absent |
 
 ### 2.2 Execution Flow
+
 1. Scans `img_dir` for all `.jpg` files and selects one at random.
 2. Resolves the matching `.txt` label file by replacing the extension.
 3. Reads each annotation line: `class_id x_center y_center width height` (normalized).
@@ -66,9 +67,272 @@ This script randomly selects a training image from the VisDrone dataset, parses 
 7. Converts BGR to RGB and renders the result using Matplotlib for interactive viewing.
 
 ### 2.3 Key Implementation Notes
+
 YOLO coordinate conversion formula:
+
 ```python
 x1 = int((x_center - w / 2) * image_width)
 y1 = int((y_center - h / 2) * image_height)
 box_w = int(w * image_width)
 box_h = int(h * image_height)
+```
+
+Images absent from the label directory (background images) are handled gracefully — the script prints a note and renders the unannotated image without crashing.
+
+OpenCV reads images in BGR. Colours are defined in BGR order. Matplotlib expects RGB, so a `cv2.cvtColor(img, cv2.COLOR_BGR2RGB)` conversion is applied before display.
+
+---
+
+# 3. Task 2 — Model Training
+
+**Scripts:** `task2_train.py` | `task2_resume.py`
+
+Task 2 fine-tunes a pre-trained YOLOv8 nano (`yolov8n`) model on the VisDrone dataset. Two scripts are provided: an initial training launcher and a checkpoint-resume utility.
+
+## 3.1 Initial Training (`task2_train.py`)
+
+### Training Parameters
+
+| Parameter | Value | Description |
+| :--- | :--- | :--- |
+| `model` | `yolov8n.pt` | Pre-trained COCO nano model used as the starting checkpoint |
+| `data` | `visdrone.yaml` | Ultralytics dataset config (class names, train/val/test paths) |
+| `epochs` | `10` | Number of complete passes through the training set |
+| `imgsz` | `640` | Input resolution (pixels); standard YOLOv8 training size |
+| `batch` | `16` | Number of images processed per gradient update step |
+| `project` | `Task02_Results` | Root directory under `runs/detect/` for saving results |
+| `name` | `yolov8n_run1` | Sub-directory name for this specific run |
+
+Ultralytics automatically saves `weights/best.pt` (highest validation mAP) and `weights/last.pt` (most recent epoch) inside the named run directory.
+
+## 3.2 Resuming Training (`task2_resume.py`)
+
+The training was intentionally interrupted because of the late night training, `task2_resume.py` reloads `last.pt` and calls `model.train(resume=True)`. Ultralytics reads the original hyperparameters from the run's `args.yaml` file, restoring the optimizer state, learning-rate schedule, and epoch counter seamlessly.
+
+```python
+checkpoint_path = r'D:\ANTS\runs\detect\Task02_Results\yolov8n_run1-2\weights\last.pt'
+
+model = YOLO(checkpoint_path)
+model.train(resume=True)
+```
+
+## 3.3 Output Artefacts
+
+- `weights/best.pt` — consumed by Task 3 (inference) and Task 4 (tracking)
+- `weights/last.pt` — consumed by Task 2 resume
+- `results.csv` — per-epoch loss and metric curves
+- `confusion_matrix.png`, `PR_curve.png`, `F1_curve.png` — validation diagnostics
+
+---
+
+# 4. Task 3 — Inference & Human Counting
+
+**Script:** `task3_inference.py`
+
+This script loads the trained model, runs single-image inference on a randomly selected test image, draws labelled bounding boxes, overlays a total human count, saves the output image, and displays it in a resizable OpenCV window.
+
+## 4.1 Configuration
+
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `model_path` | str (path) | Path to `best.pt` produced by Task 2 |
+| `test_images_dir` | str (path) | VisDrone 2019 DET test-dev images directory |
+| `output_dir` | str (path) | Directory for saving output images; auto-created |
+
+## 4.2 Detection & Counting Logic
+
+For each detected bounding box the script checks `cls_id`:
+
+```python
+if cls_id in [0, 1]:        # Pedestrian or People
+    human_count += 1
+    color = (0, 0, 255)     # Red (BGR)
+    label = f'Human {conf:.2f}'
+
+elif cls_id == 3:           # Car
+    color = (0, 255, 0)     # Green (BGR)
+    label = f'Car {conf:.2f}'
+
+else:
+    continue                # All other classes are skipped
+```
+
+## 4.3 On-screen Counter Overlay
+
+A black filled rectangle is drawn first as a background, then white text is rendered on top, ensuring readability against any scene background:
+
+```python
+count_text = f'Total Humans Counted: {human_count}'
+
+(text_width, text_height), _ = cv2.getTextSize(
+    count_text,
+    cv2.FONT_HERSHEY_SIMPLEX,
+    1,
+    2
+)
+
+cv2.rectangle(
+    img,
+    (20, 20),
+    (40 + text_width, 40 + text_height + 10),
+    (0, 0, 0),
+    -1
+)
+
+cv2.putText(
+    img,
+    count_text,
+    (30, 30 + text_height),
+    cv2.FONT_HERSHEY_SIMPLEX,
+    1,
+    (255, 255, 255),
+    2
+)
+```
+
+## 4.4 Output
+
+- Saved image: `counted_<original_filename>.jpg` in `Task03_Outputs/`
+- Console log: inference target filename and detected human count
+- Interactive window: `1280×720` resizable OpenCV display, closed by any key press
+
+---
+
+# 5. Task 4 — ByteTrack Video Tracking
+
+**Script:** `task4_tracking.py`
+
+Task 4 extends the detection pipeline to video. It launches a native OS file-picker dialog, loads the trained model, processes each frame with ByteTrack persistent tracking, renders annotated frames, and saves the output as a new video file.
+
+## 5.1 Configuration
+
+| Parameter | Value | Description |
+| :--- | :--- | :--- |
+| `model_path` | str (path) | Path to `best.pt` produced by Task 2 |
+| `output_dir` | str (path) | Directory for tracked video output; auto-created |
+| `tracker` | `bytetrack.yaml` | Ultralytics built-in ByteTrack configuration file |
+| `persist` | `True` | Maintains track IDs across frames for continuity |
+| `verbose` | `False` | Suppresses per-frame console output for performance |
+
+## 5.2 GUI File Selection
+
+Tkinter is used solely to display the OS-native file-picker dialog. The root window is immediately hidden (`root.withdraw()`) so no blank Tkinter window appears. If the user cancels the dialog, the program exits gracefully.
+
+```python
+root = tk.Tk()
+root.withdraw()    # Hides the blank Tkinter root window
+
+video_path = filedialog.askopenfilename(
+    title='Select a Drone Video to Track',
+    filetypes=[
+        ('Video Files', '*.mp4 *.avi *.mov *.mkv'),
+        ('All Files', '*.*')
+    ]
+)
+
+if not video_path:  # User pressed Cancel
+    return
+```
+
+## 5.3 Frame-by-Frame Processing
+
+```python
+while cap.isOpened():
+    success, frame = cap.read()
+
+    if not success:
+        break
+
+    results = model.track(
+        frame,
+        persist=True,
+        tracker='bytetrack.yaml',
+        verbose=False
+    )
+
+    annotated_frame = results[0].plot()
+
+    out.write(annotated_frame)
+
+    cv2.imshow('Bonus Task - ByteTrack', annotated_frame)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+```
+
+## 5.4 Output Naming Convention
+
+The output file is automatically named by appending `_tracked` to the original filename stem, preserving the container format:
+
+```python
+# Input:  drone_footage.mp4
+# Output: drone_footage_tracked.mp4
+
+name_only, ext = os.path.splitext(os.path.basename(video_path))
+
+output_path = os.path.join(
+    output_dir,
+    f'{name_only}_tracked{ext}'
+)
+```
+
+## 5.5 Video Writer Properties
+
+The output video writer mirrors the source properties exactly:
+
+- FPS: extracted from `cv2.CAP_PROP_FPS`
+- Resolution: extracted from `CAP_PROP_FRAME_WIDTH` and `CAP_PROP_FRAME_HEIGHT`
+- Codec: `mp4v` (MPEG-4 Part 2); compatible with `.mp4` containers
+
+---
+
+# 6. Dependencies & Environment Setup
+
+## 6.1 Required Packages
+
+| Package | Version | Description |
+| :--- | :--- | :--- |
+| `ultralytics` | `>=8.0` | YOLOv8 training, inference, and ByteTrack tracking |
+| `opencv-python` | `>=4.5` | Image/video I/O, drawing, and window display |
+| `matplotlib` | `>=3.5` | Interactive image display (Task 1 only) |
+| `tkinter` | stdlib | GUI file dialog (Task 4); included with Python |
+
+## 6.2 Installation
+
+```bash
+pip install ultralytics opencv-python matplotlib
+```
+
+## 6.3 Hardware Recommendations
+
+- GPU: NVIDIA GPU with CUDA 11.8+ strongly recommended for training (Task 2)
+- RAM: Minimum 8 GB system RAM; 16 GB recommended
+- Disk: ~5 GB for VisDrone dataset; ~500 MB for model weights and outputs
+
+CPU-only inference is supported for Tasks 3 and 4, though slower.
+
+---
+
+# 7. Common Issues & Resolutions
+
+| Issue | Resolution |
+| :--- | :--- |
+| No images found in folder | Check that `img_dir` and `test_images_dir` paths are correct and contain `.jpg` files |
+| `FileNotFoundError` on `.pt` file | Ensure training completed and `best.pt` / `last.pt` exist at the specified `model_path` |
+| CUDA out of memory | Reduce batch size in `task2_train.py` (e.g., from `16` to `8` or `4`) |
+| OpenCV window not responding | Press any key to close; avoid closing via window X button mid-run |
+| Tkinter dialog not appearing | Ensure a display server is active; remote SSH sessions require X11 forwarding |
+| Video output is corrupted | Verify that the input video codec is supported; try converting to H.264 MP4 first |
+| Resume fails with `KeyError` | Delete the existing run folder and restart training from scratch |
+
+---
+
+# 8. Quick Reference
+
+| Script | Command | Description |
+| :--- | :--- | :--- |
+| `task1_visualization.py` | `python task1_visualization.py` | Randomly picks & annotates a training image |
+| `task2_train.py` | `python task2_train.py` | Starts fresh YOLOv8n training run |
+| `task2_resume.py` | `python task2_resume.py` | Resumes interrupted training from `last.pt` |
+| `task3_inference.py` | `python task3_inference.py` | Runs inference on a random test image & counts humans |
+| `task4_tracking.py` | `python task4_tracking.py` | Opens file picker, tracks objects in selected video |
