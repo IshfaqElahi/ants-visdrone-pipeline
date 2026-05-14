@@ -107,7 +107,7 @@ Ultralytics automatically saves `weights/best.pt` (highest validation mAP) and `
 
 ## 3.2 Resuming Training (`task2_resume.py`)
 
-The training was intentionally interrupted because of the late night training, `task2_resume.py` reloads `last.pt` and calls `model.train(resume=True)`. Ultralytics reads the original hyperparameters from the run's `args.yaml` file, restoring the optimizer state, learning-rate schedule, and epoch counter seamlessly.
+The training was intentionally interrupted because it was showing a over night timing to finish training, `task2_resume.py` reloads `last.pt` and calls `model.train(resume=True)`. Ultralytics reads the original hyperparameters from the run's `args.yaml` file, restoring the optimizer state, learning-rate schedule, and epoch counter seamlessly.
 
 ```python
 checkpoint_path = r'D:\ANTS\runs\detect\Task02_Results\yolov8n_run1-2\weights\last.pt'
