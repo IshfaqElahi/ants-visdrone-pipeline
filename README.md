@@ -25,7 +25,7 @@ With your virtual environment activated, install the required packages:
 pip install -r requirements.txt
 ```
 ### Download and Place External Data
-Due to file size constraints, the 2.11 GB dataset is hosted externally on Google Drive. (https://drive.google.com/drive/folders/1MT7mrrRQhJosLVBaPmuaw1FVqgk75Km4?usp=sharing)
+Due to file size constraints, the 2.11 GB dataset is hosted externally on Google Drive. **🔗 [Google Drive Link - Download Here](https://drive.google.com/drive/folders/1MT7mrrRQhJosLVBaPmuaw1FVqgk75Km4?usp=sharing)**
 1. Download the `dataset` folder from the provided Google Drive link.
 2. Place the `dataset` folder directly into the root directory of this cloned project.
 
