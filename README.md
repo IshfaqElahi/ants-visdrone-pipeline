@@ -1,7 +1,7 @@
 # ants-visdrone-pipeline
 An computer vision pipeline utilizing YOLOv8 Nano and ByteTrack on the VisDrone dataset for real-time object detection, human counting, and multi-object video tracking in aerial surveillance.
 
-## Post-Clone Setup Instructions
+# Post-Clone Setup Instructions
 
 ### Navigate to the Project Directory
 ```bash
@@ -30,6 +30,27 @@ Due to file size constraints, the 2.11 GB dataset is hosted externally on Google
 2. Place the `dataset` folder directly into the root directory of this cloned project.
 
 *(Note: The trained model weights, `best.pt`, are already included in this repository under the `runs/` folder, so you only need to download the dataset!)*
+
+### ⚠️ Note on Large Video Files & Outputs
+
+Due to GitHub's strict file size limits, the following large media files and output directories have been excluded from this repository:
+* `Task04_Outputs/` (Directory containing the final tracked result videos)
+* `test_video.mp4` (Original source video)
+* `test_video_1.mp4` (Original source video)
+
+**🔗 [https://drive.google.com/drive/folders/1MT7mrrRQhJosLVBaPmuaw1FVqgk75Km4?usp=sharing]**
+
+### ByteTrack Video Tracking
+Opens a native UI file-picker to select a drone video, applies ByteTrack persistent temporal tracking, and saves the output video. You are not limited to the provided test videos! You can download *any* aerial footage of city traffic (e.g., from YouTube or Pexels), run this script, select your custom video from the file picker, and watch the pipeline track vehicles in real-time.
+
+```bash
+python task4_tracking.py
+```
+
+**Placement Instructions:**
+1. Download the missing videos and folder from the Drive link above.
+2. Place `test_video.mp4` and `test_video_1.mp4` directly into the **root directory** of this cloned project.
+3. Place the `Task04_Outputs` folder directly into the **root directory** to view the final ByteTrack results (or simply run the tracking script to generate new outputs!).
 
 Run the Pipeline
 The project uses dynamic relative paths, so the scripts will execute flawlessly once the data is in place.
@@ -63,19 +84,19 @@ The four tasks form a sequential workflow:
 
 ### 1.4 Directory Structure
 ```text
-D:\ANTS\
-├── dataset\VisDrone_Dataset\
-│   ├── VisDrone2019-DET-train\images\      # Training images (.jpg)
-│   ├── VisDrone2019-DET-train\labels\      # YOLO annotation files (.txt)
-│   ├── VisDrone2019-DET-test-dev\images\   # Test images (.jpg)
+ants-visdrone-pipeline/
+├── dataset/VisDrone_Dataset/
+│   ├── VisDrone2019-DET-train/images/       # Training images (.jpg)
+│   ├── VisDrone2019-DET-train/labels/       # YOLO annotation files (.txt)
+│   ├── VisDrone2019-DET-test-dev/images/    # Test images (.jpg)
 │   └── visdrone.yaml                        # Dataset config for Ultralytics
-├── runs\detect\Task02_Results\
-│   └── yolov8n_run1-2\weights\
-│       ├── best.pt                          # Best checkpoint (used by Tasks 3 & 4)
-│       └── last.pt                          # Last checkpoint (used by Task 2 resume)
-├── Task01_Visualizations\                  # Output: annotated training images
-├── Task03_Outputs\                         # Output: inference images with counts
-└── Task04_Outputs\                         # Output: tracked video files
+├── runs/detect/Task02_Results/
+│   └── yolov8n_run1-2/weights/
+│       ├── best.pt                          # Best checkpoint (Tasks 3 & 4)
+│       └── last.pt                          # Last checkpoint (Task 2 resume)
+├── Task01_Visualizations/                   # Output: annotated training images
+├── Task03_Outputs/                          # Output: inference images with counts
+└── Task04_Outputs/                          # Output: tracked video files
 ```
 ## 2. Task 1 — Dataset Visualization
 **Script:** `task1_visualization.py`
