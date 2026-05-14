@@ -1,6 +1,10 @@
 # ants-visdrone-pipeline
 A computer vision pipeline utilizing YOLOv8 Nano and ByteTrack on the VisDrone dataset for real-time object detection, human counting, and multi-object video tracking in aerial surveillance.
 
+[![Read Technical Report](https://img.shields.io/badge/📄_Read-Technical_Report-0A66C2?style=for-the-badge)](Aerial_Tracking_Pipeline_Technical_Analysis.pdf)
+
+> **📄 Evaluation Material:** > Please read the comprehensive **[Aerial Tracking Pipeline Technical Analysis](Aerial_Tracking_Pipeline_Technical_Analysis.pdf)** for a full breakdown of the methodology, model performance metrics, and architectural decisions.
+
 # Post-Clone Setup Instructions
 
 ### Navigate to the Project Directory
