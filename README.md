@@ -1,5 +1,5 @@
 # ants-visdrone-pipeline
-An computer vision pipeline utilizing YOLOv8 Nano and ByteTrack on the VisDrone dataset for real-time object detection, human counting, and multi-object video tracking in aerial surveillance.
+A computer vision pipeline utilizing YOLOv8 Nano and ByteTrack on the VisDrone dataset for real-time object detection, human counting, and multi-object video tracking in aerial surveillance.
 
 # Post-Clone Setup Instructions
 
@@ -38,7 +38,7 @@ Due to GitHub's strict file size limits, the following large media files and out
 * `test_video.mp4` (Original source video)
 * `test_video_1.mp4` (Original source video)
 
-**🔗 [https://drive.google.com/drive/folders/1MT7mrrRQhJosLVBaPmuaw1FVqgk75Km4?usp=sharing]**
+**🔗 [Google Drive Link - Download Here](https://drive.google.com/drive/folders/1MT7mrrRQhJosLVBaPmuaw1FVqgk75Km4?usp=sharing)**
 
 ### ByteTrack Video Tracking
 Opens a native UI file-picker to select a drone video, applies ByteTrack persistent temporal tracking, and saves the output video. You are not limited to the provided test videos! You can download *any* aerial footage of city traffic (e.g., from YouTube or Pexels), run this script, select your custom video from the file picker, and watch the pipeline track vehicles in real-time.
@@ -52,9 +52,8 @@ python task4_tracking.py
 2. Place `test_video.mp4` and `test_video_1.mp4` directly into the **root directory** of this cloned project.
 3. Place the `Task04_Outputs` folder directly into the **root directory** to view the final ByteTrack results (or simply run the tracking script to generate new outputs!).
 
-Run the Pipeline
+### Run the Pipeline
 The project uses dynamic relative paths, so the scripts will execute flawlessly once the data is in place.
-
 
 # 1.1 Pipeline Architecture
 The four tasks form a sequential workflow:
