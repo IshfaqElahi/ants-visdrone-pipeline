@@ -45,7 +45,7 @@ Due to GitHub's strict file size limits, the following large media files and out
 **🔗 [Google Drive Link - Download Here](https://drive.google.com/drive/folders/1MT7mrrRQhJosLVBaPmuaw1FVqgk75Km4?usp=sharing)**
 
 ### ByteTrack Video Tracking
-Opens a native UI file-picker to select a drone video, applies ByteTrack persistent temporal tracking, and saves the output video. You are not limited to the provided test videos! You can download *any* aerial footage of city traffic (e.g., from YouTube or Pexels), run this script, select your custom video from the file picker, and watch the pipeline track vehicles in real-time.
+Opens a native UI file-picker to select a drone video, applies ByteTrack persistent temporal tracking, and saves the output video. You are not limited to the provided test videos! You can download *any* aerial footage of city traffic (e.g., from YouTube or Pexels), run this script, select your custom video from the file picker, and watch the pipeline track vehicles in real-time. For Instance I have added the output of my test run and the ByteTrack results that the scrpit generate and puts in *Task04_Outputs* dicrectory
 
 ```bash
 python task4_tracking.py
@@ -53,8 +53,7 @@ python task4_tracking.py
 
 **Placement Instructions:**
 1. Download the missing videos and folder from the Drive link above.
-2. Place `test_video.mp4` and `test_video_1.mp4` directly into the **root directory** of this cloned project.
-3. Place the `Task04_Outputs` folder directly into the **root directory** to view the final ByteTrack results (or simply run the tracking script to generate new outputs!).
+2. Place `test_video.mp4` and `test_video_1.mp4` directly into the **root directory** of this cloned project. (optional user can use any video)
 
 ### Run the Pipeline
 The project uses dynamic relative paths, so the scripts will execute flawlessly once the data is in place.
